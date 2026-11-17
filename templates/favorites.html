@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Favorites</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .card img {
+            width: 100%;
+        }
+
+        .card div {
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/">← Back</a>
+    <h1>My Favorites</h1>
+    <div id="results"></div>
+
+    <script>
+        async function load() {
+            const favs = await (await fetch("/api/favorites")).json();
+            const box = document.getElementById("results");
+            if (favs.length === 0) { box.innerHTML = "No favorites yet."; return; }
+            box.innerHTML = favs.map(m => `
+        <a href="/recipe/${m.id}" style="text-decoration:none;color:inherit">
+          <div class="card">
+            <img src="${m.image}">
+            <div><b>${m.name}</b><br>${m.category} · ${m.area}</div>
+          </div>
+        </a>`).join("");
+        }
+        load();
+    </script>
+</body>
+
+</html>

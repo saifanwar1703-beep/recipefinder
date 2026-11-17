@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Recipe Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        input {
+            padding: 10px;
+            width: 70%;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 18px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .card img {
+            width: 100%;
+        }
+
+        .card div {
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Recipe Finder</h1>
+    <a href="/favorites">★ My Favorites</a><br><br>
+    <input id="q" placeholder="Search recipes, e.g. chicken">
+    <button onclick="search()">Search</button>
+    <div id="results"></div>
+
+    <script>
+        async function search() {
+            const q = document.getElementById("q").value;
+            const res = await fetch("/api/search?q=" + encodeURIComponent(q));
+            const meals = await res.json();
+            const box = document.getElementById("results");
+            if (meals.length === 0) { box.innerHTML = "No recipes found."; return; }
+            box.innerHTML = meals.map(m => `
+        <a href="/recipe/${m.idMeal}" style="text-decoration:none;color:inherit">
+          <div class="card">
+            <img src="${m.strMealThumb}">
+            <div><b>${m.strMeal}</b><br>${m.strCategory} · ${m.strArea}</div>
+          </div>
+        </a>`).join("");
+        }
+
+        document.getElementById("q").addEventListener("keydown", e => {
+            if (e.key === "Enter") search();
+        });
+    </script>
+</body>
+
+</html>

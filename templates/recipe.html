@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Recipe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        img {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+        }
+
+        li {
+            margin: 4px 0;
+        }
+
+        p {
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        button {
+            padding: 10px 18px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/">← Back</a>
+    <div id="content">Loading...</div>
+
+    <script>
+        let recipe;
+        const id = location.pathname.split("/").pop();
+
+        async function isFav() {
+            const favs = await (await fetch("/api/favorites")).json();
+            return favs.some(f => f.id === id);
+        }
+
+        async function toggleFav() {
+            if (await isFav()) {
+                await fetch("/api/favorites/" + id, { method: "DELETE" });
+            } else {
+                await fetch("/api/favorites", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(recipe),
+                });
+            }
+            updateButton();
+        }
+
+        async function updateButton() {
+            document.getElementById("favBtn").textContent =
+                (await isFav()) ? "★ Remove from favorites" : "☆ Add to favorites";
+        }
+
+        async function load() {
+            recipe = await (await fetch("/api/recipe/" + id)).json();
+            document.title = recipe.name;
+            document.getElementById("content").innerHTML = `
+        <h1>${recipe.name}</h1>
+        <p>${recipe.category} · ${recipe.area}</p>
+        <button id="favBtn" onclick="toggleFav()"></button><br><br>
+        <img src="${recipe.image}">
+        <h2>Ingredients</h2>
+        <ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join("")}</ul>
+        <h2>Instructions</h2>
+        <p>${recipe.instructions}</p>`;
+            updateButton();
+        }
+        load();
+    </script>
+</body>
+
+</html>
